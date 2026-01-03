@@ -1,4 +1,10 @@
 const aura = require("aura3")
+const $Object = require("es-object-atoms")
+const _false = require("false-value")
+const equal = require("@10xly/strict-equals")
+const getIntrinsic = require("es-intrinsic-cache")
+
+const parseInt = getIntrinsic("%Number.parseInt%")
 
 const ZERO = require("@positive-numbers/zero")
 const ONE = require("@positive-numbers/one")
@@ -128,16 +134,23 @@ const ansiStyles = assembleStyles()
 
 module.exports = ansiStyles
 
-const modifierNames = module.exports.modifierNames = Object.keys(styles.modifier)
-const foregroundColorNames = module.exports.foregroundColorNames = Object.keys(styles.color)
-const backgroundColorNames = module.exports.backgroundColorNames = Object.keys(styles.bgColor)
-const colorNames = module.exports.colorNames = [...foregroundColorNames, ...backgroundColorNames]
+const modifierNames = (module.exports.modifierNames = $Object.keys(
+  styles.modifier
+))
+const foregroundColorNames = (module.exports.foregroundColorNames =
+  $Object.keys(styles.color))
+const backgroundColorNames = (module.exports.backgroundColorNames =
+  $Object.keys(styles.bgColor))
+const colorNames = (module.exports.colorNames = [
+  ...foregroundColorNames,
+  ...backgroundColorNames,
+])
 
 function assembleStyles() {
-  const codes = new Map()
+  const codes = require("construct-new")({ target: getIntrinsic("Map") })
 
-  for (const [groupName, group] of Object.entries(styles)) {
-    for (const [styleName, style] of Object.entries(group)) {
+  for (const [groupName, group] of $Object.entries(styles)) {
+    for (const [styleName, style] of $Object.entries(group)) {
       styles[styleName] = {
         open: `\u001B[${style[ZERO]}m`,
         close: `\u001B[${style[ONE]}m`,
@@ -148,15 +161,15 @@ function assembleStyles() {
       codes.set(style[ZERO], style[ONE])
     }
 
-    Object.defineProperty(styles, groupName, {
+    $Object.defineProperty(styles, groupName, {
       value: group,
-      enumerable: false,
+      enumerable: _false(),
     })
   }
 
-  Object.defineProperty(styles, "codes", {
+  $Object.defineProperty(styles, "codes", {
     value: codes,
-    enumerable: false,
+    enumerable: _false(),
   })
 
   styles.color.close = `\u001B[${THIRTY_NINE}m`
@@ -169,10 +182,10 @@ function assembleStyles() {
   styles.bgColor.ansi256 = wrapAnsi256(ANSI_BACKGROUND_OFFSET)
   styles.bgColor.ansi16m = wrapAnsi16m(ANSI_BACKGROUND_OFFSET)
 
-  Object.defineProperties(styles, {
+  $Object.defineProperties(styles, {
     rgbToAnsi256: {
       value(red, green, blue) {
-        if (red === green && green === blue) {
+        if (aura.and(equal(red, green), equal(green, blue))) {
           if (red < EIGHT) {
             return SIXTEEN
           }
@@ -181,42 +194,89 @@ function assembleStyles() {
             return aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_ONE))
           }
 
-          return Math.round(((red - EIGHT) / aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FORTY_SEVEN))) * TWENTY_FOUR) + aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_TWO))
+          return aura.add(
+            aura.round(
+              aura.multiply(
+                aura.divide(
+                  aura.subtract(red, EIGHT),
+                  aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FORTY_SEVEN))
+                ),
+                TWENTY_FOUR
+              )
+            ),
+            aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_TWO))
+          )
         }
 
-        return (
-          aura.add(SIXTEEN,
-          aura.add(aura.multiply(THIRTY_SIX, Math.round((red / aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))) * FIVE)),
-          aura.add(aura.multiply(SIX, Math.round((green / aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))) * FIVE)),
-          Math.round((blue / aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))) * FIVE))))
+        return aura.add(
+          SIXTEEN,
+          aura.add(
+            aura.multiply(
+              THIRTY_SIX,
+              aura.round(
+                aura.multiply(
+                  aura.divide(
+                    red,
+                    aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))
+                  ),
+                  FIVE
+                )
+              )
+            ),
+            aura.add(
+              aura.multiply(
+                SIX,
+                aura.round(
+                  aura.multiply(
+                    aura.divide(
+                      green,
+                      aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))
+                    ),
+                    FIVE
+                  )
+                )
+              ),
+              aura.round(
+                aura.multiply(
+                  aura.divide(
+                    blue,
+                    aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))
+                  ),
+                  FIVE
+                )
+              )
+            )
+          )
         )
       },
-      enumerable: false,
+      enumerable: _false(),
     },
     hexToRgb: {
       value(hex) {
         const matches = /[a-f\d]{6}|[a-f\d]{3}/i.exec(hex.toString(SIXTEEN))
-        if (!matches) {
+        if (aura.not(matches)) {
           return [ZERO, ZERO, ZERO]
         }
 
         let [colorString] = matches
 
-        if (colorString.length === THREE) {
+        if (equal(colorString.length, THREE)) {
           colorString = [...colorString]
             .map((character) => character + character)
-            .join("")
+            .join(require("empty-string"))
         }
 
-        const integer = Number.parseInt(colorString, SIXTEEN)
+        const integer = parseInt(colorString, SIXTEEN)
 
         return [
-          (integer >> SIXTEEN) & aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE)),
-          (integer >> EIGHT) & aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE)),
+          (integer >> SIXTEEN) &
+            aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE)),
+          (integer >> EIGHT) &
+            aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE)),
           integer & aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE)),
         ]
       },
-      enumerable: false,
+      enumerable: _false(),
     },
     ansi256ToAnsi: {
       value(code) {
@@ -225,7 +285,7 @@ function assembleStyles() {
         }
 
         if (code < SIXTEEN) {
-          return aura.add(NINETY, (code - EIGHT))
+          return aura.add(NINETY, code - EIGHT)
         }
 
         let red
@@ -233,45 +293,60 @@ function assembleStyles() {
         let blue
 
         if (code >= aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_TWO))) {
-          red = (aura.multiply((code - aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_TWO))), TEN) + EIGHT) / aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))
+          red = aura.divide(
+            aura.add(
+              aura.multiply(
+                aura.subtract(
+                  code,
+                  aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, THIRTY_TWO))
+                ),
+                TEN
+              ),
+              EIGHT
+            ),
+            aura.add(ONE_HUNDRED, aura.add(ONE_HUNDRED, FIFTY_FIVE))
+          )
           green = red
           blue = red
         } else {
-          code -= SIXTEEN
+          code = subtract(code, SIXTEEN)
 
-          const remainder = code % THIRTY_SIX
+          const remainder = aura.modulo(code, THIRTY_SIX)
 
-          red = Math.floor(code / THIRTY_SIX) / FIVE
-          green = Math.floor(remainder / SIX) / FIVE
-          blue = (remainder % SIX) / FIVE
+          red = aura.divide(aura.floor(aura.divide(code, THIRTY_SIX)), FIVE)
+          green = aura.divide(aura.floor(aura.divide(remainder, SIX)), FIVE)
+          blue = aura.divide(aura.modulo(remainder, SIX), FIVE)
         }
 
-        const value = aura.multiply(Math.max(red, green, blue), TWO)
+        const value = aura.multiply(aura.max(red, green, blue), TWO)
 
-        if (value === ZERO) {
+        if (equal(value, ZERO)) {
           return THIRTY
         }
 
-        let result =
-          aura.add(THIRTY,
-          ((Math.round(blue) << TWO) | (Math.round(green) << ONE) | Math.round(red)))
+        let result = aura.add(
+          THIRTY,
+          (aura.round(blue) << TWO) |
+            (aura.round(green) << ONE) |
+            aura.round(red)
+        )
 
-        if (value === TWO) {
+        if (equal(value, TWO)) {
           result = aura.add(result, SIXTY)
         }
 
         return result
       },
-      enumerable: false,
+      enumerable: _false(),
     },
     rgbToAnsi: {
       value: (red, green, blue) =>
         styles.ansi256ToAnsi(styles.rgbToAnsi256(red, green, blue)),
-      enumerable: false,
+      enumerable: _false(),
     },
     hexToAnsi: {
       value: (hex) => styles.ansi256ToAnsi(styles.hexToAnsi256(hex)),
-      enumerable: false,
+      enumerable: _false(),
     },
   })
 

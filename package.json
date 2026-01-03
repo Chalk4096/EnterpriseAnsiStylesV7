@@ -1,6 +1,6 @@
 {
   "name": "enterprise-ansi-styles-v7",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "ANSI escape codes for styling strings in the terminal.",
   "keywords": [
     "asp",
@@ -26,6 +26,7 @@
     "test": "node test"
   },
   "dependencies": {
+    "@10xly/strict-equals": "^1.0.0",
     "@positive-numbers/eight": "^3.0.0",
     "@positive-numbers/fifty-five": "^3.0.0",
     "@positive-numbers/fifty-three": "^3.0.0",
@@ -76,7 +77,12 @@
     "@positive-numbers/twenty-two": "^3.0.0",
     "@positive-numbers/two": "^3.0.0",
     "@positive-numbers/zero": "^3.0.0",
-    "aura3": "^1.0.3-enterprise.stable"
+    "aura3": "^1.0.3-enterprise.stable",
+    "construct-new": "^2.0.4",
+    "empty-string": "^1.1.1",
+    "es-intrinsic-cache": "^1.0.1",
+    "es-object-atoms": "^1.1.1",
+    "false-value": "^2.0.6"
   },
   "devDependencies": {
     "inquirer": "^13.1.0"
